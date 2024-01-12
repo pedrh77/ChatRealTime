@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatRealTimeServer", "ChatRealTimeServer\ChatRealTimeServer.csproj", "{A6078D5F-F218-4499-9008-A3D3F19A5186}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6078D5F-F218-4499-9008-A3D3F19A5186}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6078D5F-F218-4499-9008-A3D3F19A5186}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6078D5F-F218-4499-9008-A3D3F19A5186}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6078D5F-F218-4499-9008-A3D3F19A5186}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9F68348D-BD02-45CD-B28F-6CEA28D57BF0}
+	EndGlobalSection
+EndGlobal
