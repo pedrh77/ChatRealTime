@@ -5,9 +5,9 @@ namespace ChatRealTimeServer.Config
 {
     public class Hub : HubSignalR
     {
-        public async Task NovaMensagem(string usuario, string mensagem)
+        public async Task NewMessage(string user, string msg)
         {
-            await Clients.All.SendAsync("novaMensagem", usuario, mensagem);
+            await Clients.All.SendAsync("ChatGeneral", user, msg);
         }
     }
 }

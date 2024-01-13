@@ -6,38 +6,38 @@ await Menu();
 
 async Task Menu()
 {
-    Console.WriteLine("Escreva Seu nome");
-    var nome = Console.ReadLine();
-    bool sair;
+    Console.WriteLine("Write your name:");
+    var name = Console.ReadLine();
+    bool logout;
     do
     {
         Console.WriteLine("1- Chat");
-        Console.WriteLine("0- Sair");
+        Console.WriteLine("0- Log Out");
 
-        var resp = Console.ReadLine();
+        var answer = Console.ReadLine();
 
-        switch (resp)
+        switch (answer)
         {
             case "1":
-                await MandarMensagem($"{nome}");
-                sair = false;
+                await SendMessage($"{name}");
+                logout = false;
                 break;
             case "0":
-                sair = true;
+                logout = true;
                 break;
             default:
-                sair = false;
+                logout = false;
                 break;
         }
         Console.Clear();
-    } while (sair == false);
+    } while (logout == false);
 
 }
-async Task MandarMensagem(string nome)
+async Task SendMessage(string name)
 {
-    var mensagens = new List<MensagemRequest>();
+    var messages = new List<Message>();
     Console.Clear();
-    Console.WriteLine("Digite 'Sair - Chat' para encerrar o chat");
+    Console.WriteLine("Type 'Sair - Chat' to get out of the chat");
     Console.WriteLine("------------------------------------------------------");
     int count = 0;
     while (true)
@@ -45,13 +45,13 @@ async Task MandarMensagem(string nome)
         await using var connection = new HubConnectionBuilder()
                            .WithUrl("https://localhost:7036/chat")
                            .Build();
-        connection.On<string, string>("novaMensagem", async (n, m) =>
+        connection.On<string, string>("ChatGeneral", async (n, m) =>
         {
-            if (n != nome)
+            if (n != name)
             {
                 Console.WriteLine("{0}: '{1}'", n, m);
 
-                SalvarMensagens(mensagens, n, m);
+                SaveMessage(messages, n, m);
 
             }
         });
@@ -60,32 +60,32 @@ async Task MandarMensagem(string nome)
         string msg = Console.ReadLine();
         if (msg.ToUpper() == "SAIR - CHAT")
         {
-            await connection.InvokeAsync("novaMensagem", nome, "Saiu do Chat");
+            await connection.InvokeAsync("ChatGeneral", name, "Saiu do Chat");
             await connection.StopAsync();
 
-            Console.WriteLine("Salvar Historico:(Y|n)");
+            Console.WriteLine("Save Messages:(Y|n)");
             string value = Console.ReadLine();
-            if (value == null || value.ToUpper() == "Y") await SalvarMensagensAsync(mensagens, nome);
+            if (value == null || value.ToUpper() == "Y") await SaveMessagesAsync(messages, name);
             break;
         }
         while (count == 0)
         {
-            await connection.InvokeAsync("novaMensagem", nome, "Entrou no Servidor");
+            await connection.InvokeAsync("ChatGeneral", name, "Entrou no Servidor");
             count = 1;
         }
-        await connection.InvokeAsync("novaMensagem", nome, msg);
-        SalvarMensagens(mensagens, nome, msg);
+        await connection.InvokeAsync("ChatGeneral", name, msg);
+        SaveMessage(messages, name, msg);
         await connection.StopAsync();
     }
 }
 
-List<MensagemRequest> SalvarMensagens(List<MensagemRequest> lista, string nome, string mensagem)
+List<Message> SaveMessage(List<Message> messagelist, string nome, string mensagem)
 {
-    lista.Add(new MensagemRequest(nome, mensagem));
-    return lista;
+    messagelist.Add(new Message(nome, mensagem));
+    return messagelist;
 };
 
-async Task SalvarMensagensAsync(List<MensagemRequest> lista ,string nome)
+async Task SaveMessagesAsync(List<Message> lista ,string nome)
 {
     try
     {
@@ -94,7 +94,7 @@ async Task SalvarMensagensAsync(List<MensagemRequest> lista ,string nome)
 
             foreach (var mensagem in lista)
             {
-                await writer.WriteLineAsync($"{mensagem.Nome}: {mensagem.Mensagem}");
+                await writer.WriteLineAsync($"{mensagem.name}: {mensagem.message}");
             }
 
         }
@@ -105,3 +105,4 @@ async Task SalvarMensagensAsync(List<MensagemRequest> lista ,string nome)
     }
 
 }
+
