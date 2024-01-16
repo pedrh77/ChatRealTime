@@ -35,9 +35,12 @@ async Task Menu()
 }
 async Task SendMessage(string name)
 {
+    var code = CreateCodeUser();
     var messages = new List<Message>();
     Console.Clear();
-    Console.WriteLine("Type 'Sair - Chat' to get out of the chat");
+    Console.WriteLine("Type 'Sair - Chat' to get out of the chat.");
+    Console.WriteLine($"Your Code is '{code}'.");
+    Console.WriteLine("Type '/whisper {code}' to talk whith somone ");
     Console.WriteLine("------------------------------------------------------");
     int count = 0;
     while (true)
@@ -85,7 +88,7 @@ List<Message> SaveMessage(List<Message> messagelist, string nome, string mensage
     return messagelist;
 };
 
-async Task SaveMessagesAsync(List<Message> lista ,string nome)
+async Task SaveMessagesAsync(List<Message> lista, string nome)
 {
     try
     {
@@ -104,5 +107,15 @@ async Task SaveMessagesAsync(List<Message> lista ,string nome)
         throw ex;
     }
 
+}
+
+string CreateCodeUser()
+{
+    Random random = new Random();
+    int randomNumber = random.Next(10, 1000);
+    var randomString1 = (char)random.Next('A', 'Z' + 1);
+    var randomString2 = (char)random.Next('A', 'Z' + 1);
+    var randomString3 = (char)random.Next('A', 'Z' + 1);
+    return $"{randomString1}{randomString2}-{randomNumber}";
 }
 
