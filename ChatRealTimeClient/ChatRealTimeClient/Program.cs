@@ -1,7 +1,6 @@
 ﻿using ChatRealTimeClient;
 using Microsoft.AspNetCore.SignalR.Client;
 
-
 await Menu();
 
 async Task Menu()
@@ -34,7 +33,7 @@ async Task Menu()
         }
         Console.Clear();
     } while (logout == false);
-
+    Logout(name);
 }
 
 
@@ -47,7 +46,7 @@ async Task SendMessage(string code, string Channel)
     while (true)
     {
         await using var connection = new HubConnectionBuilder()
-                             .WithUrl("https://localhost:7036/chat").Build();
+                            .WithUrl("https://localhost:7036/chat").Build();
         connection.On<string, string>(Channel, async (n, m) =>
         {
             if (n != code)
@@ -56,41 +55,22 @@ async Task SendMessage(string code, string Channel)
                 SaveMessage(messages, n, m);
             }
         });
+
         await connection.StartAsync();
 
-        string msg = Console.ReadLine();
+        var msg = Console.ReadLine();
 
-        if (msg.ToUpper() == "SAIR - CHAT")
+        if (msg.ToUpper().Equals("SAIR - CHAT"))
         {
-            await connection.InvokeAsync("Channel", code, "Disconnected", null);
-            await connection.StopAsync();
-            Console.WriteLine("Save Messages:(Y|n)");
-            string value = Console.ReadLine();
-            if (value == null || value.ToUpper() == "Y") await SaveMessagesAsync(messages, code);
+            await ExitChat(code, Channel, connection, messages);
+            break;
         }
 
-        if (Channel != "PrivateChat")
-            while (count == 0)
-            {
-                try
-                {
-
-                    await connection.InvokeAsync(Channel, code, "Entrou no Servidor", null);
-                }
-                catch (Exception)
-                {
-
-                    throw;
-                }
-                count = 1;
-            }
-        if (Channel == "PrivateChat")
+        if (Channel.Equals("PrivateChat"))
+        {
             await connection.InvokeAsync(Channel, code, msg, i);
-
-        else
-            await connection.InvokeAsync(Channel, code, msg);
-        SaveMessage(messages, code, msg);
-        await connection.StopAsync();
+            await connection.StopAsync();
+        }
     }
 }
 
@@ -106,19 +86,16 @@ async Task SaveMessagesAsync(List<Message> lista, string nome)
     {
         using (var writer = new StreamWriter(Path.Combine(Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\")), $"history-{nome}-{DateTime.UtcNow.ToString("dd.MM.yy.HH.mm.ss")}.txt"), true))
         {
-
             foreach (var mensagem in lista)
             {
                 await writer.WriteLineAsync($"{mensagem.name}: {mensagem.message}");
             }
-
         }
     }
     catch (Exception ex)
     {
         throw ex;
     }
-
 }
 
 string CreateCodeUser()
@@ -131,18 +108,20 @@ string CreateCodeUser()
     return $"{randomString1}{randomString2}-{randomNumber}";
 }
 
-async Task<List<User>> ListOnlineUsers()
+async Task<List<User>> ListOnlineUsers(string code)
 {
     await using var connection = new HubConnectionBuilder()
                              .WithUrl("https://localhost:7036/chat").Build();
     await connection.StartAsync();
     var users = await connection.InvokeAsync<List<User>>("OnlineUsers");
+    var temp = users.Where(x => x.Name == code).FirstOrDefault();
+    if (temp != null)
+        users.Remove(temp);
     foreach (var user in users)
     {
         Console.WriteLine(user);
     }
     return users;
-
 }
 
 
@@ -154,26 +133,52 @@ async Task AddUser(string code)
     await connection.InvokeAsync("AddUser", code);
 }
 
+async Task ExitChat(string code, string channel, HubConnection connection, List<Message> messages)
+{
+
+    if (code.ToUpper() == "SAIR - CHAT")
+    {
+        Console.WriteLine("Save Messages:(Y|n)");
+        string value = Console.ReadLine();
+        if (value == null || value.ToUpper() == "Y") await SaveMessagesAsync(messages, code);
+    }
+}
+
+async Task Logout(string code)
+{
+    await using var connection = new HubConnectionBuilder()
+                           .WithUrl("https://localhost:7036/chat").Build();
+    await connection.StartAsync();
+    await connection.InvokeAsync("LogoutUser", code);
+}
+
 
 async Task<string> HomeChat(string code, string Channel)
 {
     string i = null;
+    User user;
     Console.Clear();
-    Console.WriteLine("Type 'Sair - Chat' to get out of the chat.");
-    Console.WriteLine($"Your UserCode is '{code}'.");
+    Console.WriteLine($"Type 'Sair - Chat' to get out of the chat.\nYour UserCode is '{code}'.");
     if (Channel == "PrivateChat")
     {
         Console.WriteLine("Type a User code to type whith somone or see the list of users bellow.");
-        Console.WriteLine("1 - Online Users");
-        Console.WriteLine("Type a UserCode");
-        i = Console.ReadLine();
-        if (i == "1")
+        Console.WriteLine("------------------------------------------------------");
+        Console.WriteLine("Type '1' to see the List of Online Users or type the code of a Friend");
+
+        while (true)
         {
-            Console.WriteLine("--------");
-            var users = await ListOnlineUsers();
-            while (users.Any(x => i.Contains(x.Name))){
-                users = await ListOnlineUsers();
+            i = Console.ReadLine();
+            if (i == "1")
+            {
+                var users = await ListOnlineUsers(code);
                 i = Console.ReadLine();
+                if (users.Any(x => i.Contains(x.Name)))
+                {
+                    Console.Clear();
+                    Console.WriteLine($"Are you connecting whith...{i}");
+
+                    return i;
+                }
             }
         }
     }

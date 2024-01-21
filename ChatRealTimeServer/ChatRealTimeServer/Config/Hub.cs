@@ -17,9 +17,6 @@ namespace ChatRealTimeServer.Config
                 var temp = ListUsers.Users.Where(x => x.Name.Equals(s)).FirstOrDefault();
                ListUsers.RemoveUser(temp);
             }
-
-
-
             if (r != null && ValidateUserExists(r))
                 await Clients.User(s).SendAsync("PrivateChat", s, m);
 
@@ -31,10 +28,15 @@ namespace ChatRealTimeServer.Config
 
         public async Task AddUser(string code)
         {
-
             var newuser = new User(code);
             ListUsers.AddUser(newuser);
-
+        }
+        public async Task LogoutUser(string code)
+        {
+            if (ValidateUserExists(code)) {
+                var temp = ListUsers.Users.Where(x => x.Name.Equals(code)).FirstOrDefault();
+                ListUsers.RemoveUser(temp);
+            }
         }
 
         private bool ValidateUserExists(string? u)
