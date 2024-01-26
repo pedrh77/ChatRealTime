@@ -6,5 +6,5 @@ var app = builder.Build();
 
 app.MapGet("/", () => "Hello World!");
 
-app.MapHub<Hub>("/chat");
+app.MapHub<Hub.Handle>("/chat");
 app.Run();

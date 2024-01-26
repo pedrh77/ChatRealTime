@@ -1,50 +1,59 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using HubSignalR = Microsoft.AspNetCore.SignalR.Hub;
-
 namespace ChatRealTimeServer.Config
 {
-    public class Hub : HubSignalR
+    public class Hub : Microsoft.AspNetCore.SignalR.Hub
     {
-        public async Task GeneralChat(string user, string msg)
+        public class Handle : Hub
         {
-            await Clients.All.SendAsync("GeneralChat", user, msg);
-        }
-
-        public async Task PrivateChat(string s, string m, string? r)
-        {
-            if (m == "Disconnected" && ValidateUserExists(s))
+            private readonly IHubContext<Hub> _context;
+            public Handle(IHubContext<Hub> context)
             {
-                var temp = ListUsers.Users.Where(x => x.Name.Equals(s)).FirstOrDefault();
-               ListUsers.RemoveUser(temp);
+                _context = context;
             }
-            if (r != null && ValidateUserExists(r))
-                await Clients.User(s).SendAsync("PrivateChat", s, m);
 
-        }
-        public async Task<List<User>> OnlineUsers()
-        {
-            return ListUsers.Users;
-        }
-
-        public async Task AddUser(string code)
-        {
-            var newuser = new User(code);
-            ListUsers.AddUser(newuser);
-        }
-        public async Task LogoutUser(string code)
-        {
-            if (ValidateUserExists(code)) {
-                var temp = ListUsers.Users.Where(x => x.Name.Equals(code)).FirstOrDefault();
-                ListUsers.RemoveUser(temp);
+            public async Task GeneralChat(string user, string msg)
+            {
+                await Clients.All.SendAsync("GeneralChat", user, msg);
             }
-        }
 
-        private bool ValidateUserExists(string? u)
-        {
-            var user = ListUsers.Users.Where(x => x.Name.Equals(u)).FirstOrDefault();
-            return user != null ? true : false;
+            public async Task PrivateChat(string s, string m, string? r)
+            {
+                if (r != null || ValidateUserExists(r))
+                {
+                    User? temp = ListUsers.Users.FirstOrDefault(x => x.Name.Equals(r));
+                   
+                  _context.Clients.Users(r).SendAsync("PrivateChat", s, m);
+                };
+            }
+
+            public async Task AddUser(string code)
+            {
+                var test = _context.Clients.User(code);
+               
+                var newuser = new User(code, test);
+                ListUsers.AddUser(newuser);
+            }
+
+            public async Task<List<User>> OnlineUsers()
+            {
+                return ListUsers.Users;
+            }
+
+            public async Task LogoutUser(string code)
+            {
+                if (ValidateUserExists(code))
+                {
+                    var temp = ListUsers.Users.Where(x => x.Name.Equals(code)).FirstOrDefault();
+                    ListUsers.RemoveUser(temp);
+                }
+            }
+
+            private bool ValidateUserExists(string? u)
+            {
+                var user = ListUsers.Users.Where(x => x.Name.Equals(u)).FirstOrDefault();
+                return user != null ? true : false;
+            }
         }
     }
-
 }
 

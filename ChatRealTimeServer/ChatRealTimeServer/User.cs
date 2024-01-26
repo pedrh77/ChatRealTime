@@ -1,6 +1,8 @@
-﻿namespace ChatRealTimeServer
+﻿using Microsoft.AspNetCore.SignalR;
+
+namespace ChatRealTimeServer
 {
-    public record User(string Name);
+    public record User(string Name, IClientProxy ConnectionId);
 
 
     public static class ListUsers
@@ -12,7 +14,11 @@
         {
             get
             {
-                return users.ToList(); 
+                foreach (var user in users.ToList())
+                {
+                    Console.WriteLine(user);
+                }
+                return users.ToList();
             }
         }
 
@@ -28,6 +34,7 @@
 
         public static bool UserExists(string userName)
         {
+           
             return users.Any(u => u.Name == userName);
         }
     }
