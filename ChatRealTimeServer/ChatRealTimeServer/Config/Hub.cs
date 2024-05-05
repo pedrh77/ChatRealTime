@@ -10,20 +10,6 @@ namespace ChatRealTimeServer.Config
             await Clients.All.SendAsync("GeneralChat", user, msg);
         }
 
-        public async Task PrivateChat(string s, string m, string? r)
-        {
-            if (m == "Disconnected" && ValidateUserExists(s))
-            {
-                var temp = ListUsers.Users.Where(x => x.Name.Equals(s)).FirstOrDefault();
-               ListUsers.RemoveUser(temp);
-            }
-
-
-
-            if (r != null && ValidateUserExists(r))
-                await Clients.User(s).SendAsync("PrivateChat", s, m);
-
-        }
         public async Task<List<User>> OnlineUsers()
         {
             return ListUsers.Users;

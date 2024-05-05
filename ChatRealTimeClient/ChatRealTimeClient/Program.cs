@@ -12,17 +12,12 @@ async Task Menu()
     do
     {
         Console.WriteLine("1- General Chat");
-        Console.WriteLine("2- Privated Chat");
         Console.WriteLine("0- Log Out");
         var answer = Console.ReadLine();
         switch (answer)
         {
             case "1":
                 await SendMessage(name, "ChatGeneral");
-                logout = false;
-                break;
-            case "2":
-                await SendMessage(name, "PrivateChat");
                 logout = false;
                 break;
             case "0":
@@ -69,26 +64,22 @@ async Task SendMessage(string code, string Channel)
             if (value == null || value.ToUpper() == "Y") await SaveMessagesAsync(messages, code);
         }
 
-        if (Channel != "PrivateChat")
-            while (count == 0)
+    
+        while (count == 0)
+        {
+            try
             {
-                try
-                {
 
-                    await connection.InvokeAsync(Channel, code, "Entrou no Servidor", null);
-                }
-                catch (Exception)
-                {
-
-                    throw;
-                }
-                count = 1;
+                await connection.InvokeAsync(Channel, code, "Entrou no Servidor", null);
             }
-        if (Channel == "PrivateChat")
-            await connection.InvokeAsync(Channel, code, msg, i);
+            catch (Exception)
+            {
 
-        else
-            await connection.InvokeAsync(Channel, code, msg);
+                throw;
+            }
+            count = 1;
+        
+        await connection.InvokeAsync(Channel, code, msg);
         SaveMessage(messages, code, msg);
         await connection.StopAsync();
     }
@@ -161,22 +152,6 @@ async Task<string> HomeChat(string code, string Channel)
     Console.Clear();
     Console.WriteLine("Type 'Sair - Chat' to get out of the chat.");
     Console.WriteLine($"Your UserCode is '{code}'.");
-    if (Channel == "PrivateChat")
-    {
-        Console.WriteLine("Type a User code to type whith somone or see the list of users bellow.");
-        Console.WriteLine("1 - Online Users");
-        Console.WriteLine("Type a UserCode");
-        i = Console.ReadLine();
-        if (i == "1")
-        {
-            Console.WriteLine("--------");
-            var users = await ListOnlineUsers();
-            while (users.Any(x => i.Contains(x.Name))){
-                users = await ListOnlineUsers();
-                i = Console.ReadLine();
-            }
-        }
-    }
     Console.WriteLine("------------------------------------------------------");
     return i;
 }
